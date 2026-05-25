@@ -50,7 +50,7 @@ export default function Hero({ tagline, resumeUrl, avatarUrl }: HeroProps) {
                             onClick={handleConfetti}
                             id="hero-resume-btn"
                         >
-                            GET RESUME
+                            MY RESUME
                         </a>
                     </div>
                 </div>
