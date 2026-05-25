@@ -30,6 +30,7 @@ export default async function Home() {
     let email = 'aryan.tech.work@gmail.com';
     let tagline = 'Designing robust, maximum-impact interfaces with solid backend system logic. Obsessed with extreme borders, drop-offset shadows, and pixel-perfect software engineering.';
     let availableForWork = true;
+    let avatarUrl = '';
 
     // Fetch live entries from Supabase in parallel if configured
     if (supabasePublic) {
@@ -77,6 +78,9 @@ export default async function Home() {
                 if (configMap.has('available_for_work')) {
                     availableForWork = configMap.get('available_for_work') === 'true';
                 }
+                if (configMap.has('avatar_url')) {
+                    avatarUrl = configMap.get('avatar_url')!;
+                }
             }
         } catch (err) {
             console.error("Warning: Failed to fetch Supabase data. Rendered default fallbacks instead.", err);
@@ -87,7 +91,7 @@ export default async function Home() {
         <>
             <Navbar availableForWork={availableForWork} />
             <main>
-                <Hero tagline={tagline} resumeUrl={resumeUrl} />
+                <Hero tagline={tagline} resumeUrl={resumeUrl} avatarUrl={avatarUrl} />
                 <Marquee />
                 <Projects projects={projects} />
                 <Skills skills={skills} />

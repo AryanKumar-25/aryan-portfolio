@@ -38,7 +38,7 @@ export default function Navbar({ availableForWork = true }: NavbarProps) {
                             backgroundColor: 'var(--color-teal)',
                             color: 'var(--color-navy)',
                             border: '2px solid var(--color-navy)',
-                            fontSize: '9px',
+                            fontSize: '10px',
                             fontWeight: '900',
                             padding: '2px 6px',
                             boxShadow: '2px 2px 0 var(--color-navy)',

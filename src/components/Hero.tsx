@@ -3,9 +3,10 @@
 interface HeroProps {
     tagline: string;
     resumeUrl: string;
+    avatarUrl?: string;
 }
 
-export default function Hero({ tagline, resumeUrl }: HeroProps) {
+export default function Hero({ tagline, resumeUrl, avatarUrl }: HeroProps) {
     const handleConfetti = (e: React.MouseEvent) => {
         if (window.triggerConfetti) {
             window.triggerConfetti(e.clientX, e.clientY);
@@ -27,8 +28,8 @@ export default function Hero({ tagline, resumeUrl }: HeroProps) {
                     <div className="section-tag">GUEST_USER@ARYAN.DEV:~$ WHOAMI</div>
                     <h1 className="hero-heading">
                         <span className="hero-line hero-line-stroke">CREATIVE</span>
-                        <span className="hero-line hero-line-solid">FULL STACK</span>
-                        <span className="hero-line hero-line-orange">DEVELOPER_</span>
+                        <span className="hero-line hero-line-solid">WEB</span>
+                        <span className="hero-line hero-line-orange">ENGINEER_</span>
                     </h1>
                     <p className="hero-subtext">
                         {tagline}
@@ -62,8 +63,22 @@ export default function Hero({ tagline, resumeUrl }: HeroProps) {
                         <code>const dev = true;</code>
                     </div>
 
-                    <div className="avatar-circle">
-                        <span className="avatar-initial">A</span>
+                    <div className="avatar-circle" style={{ padding: 0, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        {avatarUrl ? (
+                            <img
+                                src={avatarUrl}
+                                alt="Aryan Kumar"
+                                style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'cover',
+                                    borderRadius: '50%',
+                                    display: 'block'
+                                }}
+                            />
+                        ) : (
+                            <span className="avatar-initial">A</span>
+                        )}
                     </div>
 
                     {/* Interactive Stat Badge */}
@@ -74,8 +89,7 @@ export default function Hero({ tagline, resumeUrl }: HeroProps) {
                         aria-label="Click for confetti"
                         id="hero-stat-badge"
                     >
-                        <span className="stat-num">15+</span>
-                        <span className="stat-label">PROJECTS</span>
+                        <span className="stat-num" style={{ fontSize: '1rem', letterSpacing: '0.05em' }}>HII!!</span>
                     </div>
                 </div>
             </div>
