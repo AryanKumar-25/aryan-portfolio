@@ -11,7 +11,11 @@ async function guard(request: Request) {
 }
 
 // PATCH — mark a message as read
-export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+export async function PATCH(
+    request: Request,
+    context: { params: Promise<{ id: string }> }
+) {
+    const { id } = await context.params;
     if (!(await guard(request))) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -22,7 +26,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
         const { error } = await supabaseAdmin
             .from('messages')
             .update({ read: true })
-            .eq('id', params.id);
+            .eq('id', id);
         if (error) throw error;
         return NextResponse.json({ success: true });
     } catch (err: any) {
@@ -31,7 +35,11 @@ export async function PATCH(request: Request, { params }: { params: { id: string
 }
 
 // DELETE — delete a message
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(
+    request: Request,
+    context: { params: Promise<{ id: string }> }
+) {
+    const { id } = await context.params;
     if (!(await guard(request))) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -42,7 +50,7 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
         const { error } = await supabaseAdmin
             .from('messages')
             .delete()
-            .eq('id', params.id);
+            .eq('id', id);
         if (error) throw error;
         return NextResponse.json({ success: true });
     } catch (err: any) {
