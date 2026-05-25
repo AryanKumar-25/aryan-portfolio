@@ -130,9 +130,10 @@ export default function SkillsAdmin() {
                                 >
                                     <option value="Frontend">Frontend</option>
                                     <option value="Backend">Backend</option>
+                                    <option value="Language">Language</option>
                                     <option value="Database">Database</option>
-                                    <option value="Tools">Tools</option>
                                     <option value="Cloud">Cloud</option>
+                                    <option value="Tools">Tools</option>
                                 </select>
                             </div>
 

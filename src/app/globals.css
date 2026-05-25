@@ -791,6 +791,29 @@ body {
     text-shadow: 4px 4px 0 var(--color-navy);
 }
 
+/* Category grouping wrapper */
+.skills-category-group {
+    margin-bottom: 48px;
+}
+
+.skills-category-group:last-child {
+    margin-bottom: 0;
+}
+
+.skills-category-label {
+    font-family: var(--font-mono);
+    font-weight: 800;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--color-navy);
+    background-color: var(--color-white);
+    border: 2px solid var(--color-navy);
+    box-shadow: 3px 3px 0 var(--color-navy);
+    display: inline-block;
+    padding: 4px 12px;
+    margin-bottom: 20px;
+}
+
 .skills-grid {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
