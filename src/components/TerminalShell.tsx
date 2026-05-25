@@ -8,18 +8,64 @@ interface TerminalLine {
     html?: boolean;
 }
 
+// ── Supabase fetch helpers (hit the existing API routes) ────────────────────
+
+async function fetchSkills(): Promise<string> {
+    try {
+        const res = await fetch('/api/skills');
+        const json = await res.json();
+        if (!json.data?.length) return 'No skills found.';
+        return json.data.map((s: any) => s.name).join(', ');
+    } catch {
+        return 'Error fetching skills.';
+    }
+}
+
+async function fetchProjects(): Promise<{ title: string; description: string; featured: boolean }[]> {
+    try {
+        const res = await fetch('/api/projects');
+        const json = await res.json();
+        return json.data || [];
+    } catch {
+        return [];
+    }
+}
+
+async function fetchExperience(): Promise<{ role: string; company: string; period: string }[]> {
+    try {
+        const res = await fetch('/api/experience');
+        const json = await res.json();
+        return json.data || [];
+    } catch {
+        return [];
+    }
+}
+
+async function fetchConfig(): Promise<Record<string, string>> {
+    try {
+        const res = await fetch('/api/settings');
+        const json = await res.json();
+        return json.data || {};
+    } catch {
+        return {};
+    }
+}
+
+// ── Component ────────────────────────────────────────────────────────────────
+
 export default function TerminalShell() {
     const [isOpen, setIsOpen] = useState(false);
     const [input, setInput] = useState('');
+    const [cmdHistory, setCmdHistory] = useState<string[]>([]);
+    const [historyIndex, setHistoryIndex] = useState(-1);
     const [history, setHistory] = useState<TerminalLine[]>([
-        { text: "Welcome to Aryan's Interactive Terminal shell. [v1.1.0]", type: "success" },
-        { text: "Type 'help' for a list of available commands.", type: "default" }
+        { text: "Welcome to Aryan's Interactive Terminal shell. [v2.0.0]", type: 'success' },
+        { text: "Type 'help' for available commands.", type: 'default' },
     ]);
 
     const logEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
-    // Scroll to bottom on updates
     useEffect(() => {
         if (isOpen) {
             logEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -27,106 +73,166 @@ export default function TerminalShell() {
         }
     }, [history, isOpen]);
 
-    // CLI Commands logic
-    const handleCommand = (cmdText: string) => {
-        const cleanCmd = cmdText.trim().toLowerCase();
-        const newHistory = [...history, { text: `guest@aryan.dev:~$ ${cmdText}`, type: 'highlight' as const }];
+    const push = (base: TerminalLine[], lines: TerminalLine[]) => {
+        setHistory([...base, ...lines]);
+    };
 
-        if (cleanCmd === '') {
-            setHistory(newHistory);
-            return;
-        }
+    const handleCommand = async (cmdText: string) => {
+        const clean = cmdText.trim().toLowerCase();
+        const base: TerminalLine[] = [
+            ...history,
+            { text: `guest@aryan.dev:~$ ${cmdText}`, type: 'highlight' },
+        ];
 
-        switch (cleanCmd) {
-            case 'help':
-                setHistory([
-                    ...newHistory,
-                    { text: "Available commands:", type: "highlight" },
-                    { text: "  about      Display brief biographical summary", type: "default" },
-                    { text: "  skills     List primary technologies in the stack", type: "default" },
-                    { text: "  projects   Show details of featured software products", type: "default" },
-                    { text: "  contact    Get social references and communication links", type: "default" },
-                    { text: "  confetti   Trigger canvas particle explosion", type: "default" },
-                    { text: "  clear      Wipe the terminal screen buffer", type: "default" },
-                    { text: "  secret     Execute secret subroutine", type: "default" }
+        if (clean === '') { setHistory(base); return; }
+
+        // Save to command history for arrow-key navigation
+        setCmdHistory(prev => [cmdText, ...prev].slice(0, 50));
+        setHistoryIndex(-1);
+
+        switch (clean) {
+
+            // ── whoami ────────────────────────────────────────────────────
+            case 'whoami': {
+                const config = await fetchConfig();
+                push(base, [
+                    { text: 'Aryan — Creative Web Engineer', type: 'success' },
+                    { text: config.tagline || 'Building bold, high-performance web systems.', type: 'default' },
                 ]);
                 break;
+            }
 
-            case 'about':
-                setHistory([
-                    ...newHistory,
-                    { text: "Aryan is a Full Stack Developer specializing in building high-impact web applications.", type: "default" },
-                    { text: "Focused on robust system design, clean API layers, and playful maximalist frontend layout systems.", type: "default" }
-                ]);
-                break;
-
+            // ── skills / skills --list ────────────────────────────────────
             case 'skills':
-                setHistory([
-                    ...newHistory,
-                    { text: "Primary Technical Skills:", type: "highlight" },
-                    { text: "  - Languages:  JavaScript, TypeScript, Go, SQL", type: "default" },
-                    { text: "  - Frontend:   React.js, Next.js, HTML5, CSS3, TailwindCSS", type: "default" },
-                    { text: "  - Backend:    Node.js, Express, Go, REST APIs, gRPC", type: "default" },
-                    { text: "  - Database:   PostgreSQL, Redis, Supabase", type: "default" },
-                    { text: "  - DevOps:     Docker, AWS, Git, CI/CD pipelines", type: "default" }
+            case 'skills --list': {
+                push(base, [{ text: 'Fetching skills from database...', type: 'default' }]);
+                const result = await fetchSkills();
+                setHistory(prev => [
+                    ...prev.slice(0, -1),
+                    { text: '  ' + result, type: 'default' },
                 ]);
                 break;
+            }
 
+            // ── projects / projects --featured ────────────────────────────
             case 'projects':
-                setHistory([
-                    ...newHistory,
-                    { text: "Featured Projects:", type: "highlight" },
-                    { text: "  1. NEXUS.OS  - Collaborative remote dashboard (Next.js & WebSockets)", type: "default" },
-                    { text: "  2. KRYPTON.DB - Distributed lightweight key-value store (Go & React)", type: "default" },
-                    { text: "  3. AURA.AI   - Semantic vector workspace orchestrations (Node & PG)", type: "default" }
-                ]);
-                break;
-
-            case 'contact':
-                setHistory([
-                    ...newHistory,
-                    { text: "Get in touch:", type: "highlight" },
-                    { text: "  Email:    aryan.tech.work@gmail.com", type: "default" },
-                    { text: "  GitHub:   https://github.com/aryan", type: "default" },
-                    { text: "  LinkedIn: https://linkedin.com/in/aryan", type: "default" }
-                ]);
-                break;
-
-            case 'confetti':
-                if (window.triggerConfetti) {
-                    window.triggerConfetti(window.innerWidth / 2, window.innerHeight / 2);
-                    setHistory([
-                        ...newHistory,
-                        { text: "💥 Confetti initialized! Boom!", type: "success" }
-                    ]);
+            case 'projects --featured': {
+                push(base, [{ text: 'Fetching projects from database...', type: 'default' }]);
+                const projects = await fetchProjects();
+                const featured = projects.filter(p => p.featured);
+                const list = (featured.length ? featured : projects).slice(0, 5);
+                if (!list.length) {
+                    setHistory(prev => [...prev.slice(0, -1), { text: 'No projects found.', type: 'error' }]);
                 } else {
-                    setHistory([
-                        ...newHistory,
-                        { text: "Confetti engine not initialized.", type: "error" }
+                    setHistory(prev => [
+                        ...prev.slice(0, -1),
+                        { text: 'Featured Projects:', type: 'highlight' },
+                        ...list.map((p, i) => ({
+                            text: `  ${i + 1}. ${p.title}  —  ${p.description.slice(0, 60)}${p.description.length > 60 ? '...' : ''}`,
+                            type: 'default' as const,
+                        })),
                     ]);
                 }
                 break;
+            }
 
+            // ── experience / experience --current ─────────────────────────
+            case 'experience':
+            case 'experience --current': {
+                push(base, [{ text: 'Fetching experience from database...', type: 'default' }]);
+                const exp = await fetchExperience();
+                if (!exp.length) {
+                    setHistory(prev => [...prev.slice(0, -1), { text: 'No experience found.', type: 'error' }]);
+                } else {
+                    setHistory(prev => [
+                        ...prev.slice(0, -1),
+                        { text: 'Work Experience:', type: 'highlight' },
+                        ...exp.slice(0, 4).map(e => ({
+                            text: `  ${e.role}  @  ${e.company}  [${e.period}]`,
+                            type: 'default' as const,
+                        })),
+                    ]);
+                }
+                break;
+            }
+
+            // ── status ────────────────────────────────────────────────────
+            case 'status': {
+                push(base, [{ text: 'Fetching site config...', type: 'default' }]);
+                const config = await fetchConfig();
+                const avail = config.available_for_work === 'true';
+                setHistory(prev => [
+                    ...prev.slice(0, -1),
+                    { text: avail ? 'Available for work ✓' : 'Not currently available for work ✗', type: avail ? 'success' : 'error' },
+                    { text: `  Email: ${config.email || 'aryan.tech.work@gmail.com'}`, type: 'default' },
+                ]);
+                break;
+            }
+
+            // ── help ──────────────────────────────────────────────────────
+            case 'help':
+                push(base, [
+                    { text: 'Available commands:', type: 'highlight' },
+                    { text: '  whoami               About me (live from Supabase)', type: 'default' },
+                    { text: '  skills --list        All skills from the database', type: 'default' },
+                    { text: '  projects --featured  Featured project titles + descriptions', type: 'default' },
+                    { text: '  experience --current Work history from the database', type: 'default' },
+                    { text: '  status               Availability + contact info', type: 'default' },
+                    { text: '  about                Short bio', type: 'default' },
+                    { text: '  contact              Social links', type: 'default' },
+                    { text: '  confetti             🎉 Trigger particle explosion', type: 'default' },
+                    { text: '  clear                Wipe the terminal screen', type: 'default' },
+                    { text: '  secret               Execute secret subroutine', type: 'default' },
+                ]);
+                break;
+
+            // ── about ─────────────────────────────────────────────────────
+            case 'about':
+                push(base, [
+                    { text: 'Aryan — Creative Web Engineer', type: 'success' },
+                    { text: 'Building robust, maximum-impact interfaces with solid backend system logic.', type: 'default' },
+                    { text: 'Obsessed with extreme borders, drop-offset shadows, and pixel-perfect engineering.', type: 'default' },
+                ]);
+                break;
+
+            // ── contact ───────────────────────────────────────────────────
+            case 'contact': {
+                const config = await fetchConfig();
+                push(base, [
+                    { text: 'Get in touch:', type: 'highlight' },
+                    { text: `  Email:    ${config.email || 'aryan.tech.work@gmail.com'}`, type: 'default' },
+                    { text: '  GitHub:   https://github.com/AryanKumar-25', type: 'default' },
+                    { text: '  LinkedIn: https://linkedin.com/in/aryan', type: 'default' },
+                ]);
+                break;
+            }
+
+            // ── confetti ──────────────────────────────────────────────────
+            case 'confetti':
+                if (window.triggerConfetti) {
+                    window.triggerConfetti(window.innerWidth / 2, window.innerHeight / 2);
+                    push(base, [{ text: '💥 Confetti initialized! Boom!', type: 'success' }]);
+                } else {
+                    push(base, [{ text: 'Confetti engine not initialized.', type: 'error' }]);
+                }
+                break;
+
+            // ── clear ─────────────────────────────────────────────────────
             case 'clear':
                 setHistory([]);
                 break;
 
+            // ── secret ────────────────────────────────────────────────────
             case 'secret':
-                setHistory([
-                    ...newHistory,
-                    { text: "Unlocking secret ASCII Subroutine...", type: "success" },
-                    { text: `
- /\\_/\\
-( o.o )
- > ^ <  MEOW!
-`, type: "default", html: true }
+                push(base, [
+                    { text: 'Unlocking secret ASCII subroutine...', type: 'success' },
+                    { text: ` /\\_/\\\n( o.o )\n > ^ <  MEOW!`, type: 'default', html: true },
                 ]);
                 break;
 
             default:
-                setHistory([
-                    ...newHistory,
-                    { text: `Command not found: '${cmdText}'. Type 'help' for support.`, type: "error" }
+                push(base, [
+                    { text: `Command not found: '${cmdText}'. Type 'help' for support.`, type: 'error' },
                 ]);
         }
     };
@@ -137,10 +243,24 @@ export default function TerminalShell() {
         setInput('');
     };
 
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            const next = Math.min(historyIndex + 1, cmdHistory.length - 1);
+            setHistoryIndex(next);
+            setInput(cmdHistory[next] ?? '');
+        } else if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            const next = historyIndex - 1;
+            if (next < 0) { setHistoryIndex(-1); setInput(''); }
+            else { setHistoryIndex(next); setInput(cmdHistory[next] ?? ''); }
+        }
+    };
+
     return (
         <>
-            {/* Terminal Trigger Button */}
-            <button 
+            {/* Trigger Button */}
+            <button
                 className={`terminal-trigger ${isOpen ? 'hide' : ''}`}
                 onClick={() => setIsOpen(true)}
                 id="terminal-open-btn"
@@ -148,34 +268,34 @@ export default function TerminalShell() {
                 <span>&gt;_ SHELL</span>
             </button>
 
-            {/* Terminal Window Overlay */}
+            {/* Terminal Window */}
             <div className={`terminal-drawer ${isOpen ? 'active' : ''}`} id="terminal-drawer">
                 <div className="terminal-header">
                     <div className="terminal-dots">
-                        <div className="terminal-dot-btn red"></div>
-                        <div className="terminal-dot-btn yellow"></div>
-                        <div className="terminal-dot-btn green"></div>
+                        <div className="terminal-dot-btn red" />
+                        <div className="terminal-dot-btn yellow" />
+                        <div className="terminal-dot-btn green" />
                     </div>
                     <div className="terminal-title">guest@aryan.dev: ~/portfolio_shell</div>
-                    <button 
-                        className="terminal-minimize" 
+                    <button
+                        className="terminal-minimize"
                         onClick={() => setIsOpen(false)}
                         id="terminal-close-btn"
                     >
                         [ - ]
                     </button>
                 </div>
-                
+
                 <div className="terminal-body" onClick={() => inputRef.current?.focus()}>
                     <div className="terminal-log">
                         {history.map((line, idx) => (
-                            <div 
-                                key={idx} 
-                                className={`
-                                    ${line.type === 'highlight' ? 'term-highlight' : ''}
-                                    ${line.type === 'success' ? 'term-success' : ''}
-                                    ${line.type === 'error' ? 'term-error' : ''}
-                                `}
+                            <div
+                                key={idx}
+                                className={
+                                    line.type === 'highlight' ? 'term-highlight' :
+                                    line.type === 'success'   ? 'term-success'   :
+                                    line.type === 'error'     ? 'term-error'     : ''
+                                }
                                 style={{ whiteSpace: line.html ? 'pre' : 'normal' }}
                             >
                                 {line.text}
@@ -186,12 +306,13 @@ export default function TerminalShell() {
 
                     <form onSubmit={handleFormSubmit} className="terminal-input-line">
                         <span className="terminal-prompt">guest@aryan.dev:~$</span>
-                        <input 
+                        <input
                             ref={inputRef}
-                            type="text" 
+                            type="text"
                             className="terminal-input"
                             value={input}
-                            onChange={(e) => setInput(e.target.value)}
+                            onChange={e => setInput(e.target.value)}
+                            onKeyDown={handleKeyDown}
                             autoComplete="off"
                             autoCapitalize="off"
                             id="terminal-text-input"
