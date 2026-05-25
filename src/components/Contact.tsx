@@ -10,13 +10,16 @@ export default function Contact({ email }: ContactProps) {
     const [name, setName] = useState('');
     const [emailInput, setEmailInput] = useState('');
     const [message, setMessage] = useState('');
+    const [submitting, setSubmitting] = useState(false);
     const [showToast, setShowToast] = useState(false);
     const [toastMsg, setToastMsg] = useState('');
+    const [toastType, setToastType] = useState<'success' | 'error'>('success');
 
-    const displayToast = (msg: string) => {
+    const displayToast = (msg: string, type: 'success' | 'error' = 'success') => {
         setToastMsg(msg);
+        setToastType(type);
         setShowToast(true);
-        setTimeout(() => setShowToast(false), 3000);
+        setTimeout(() => setShowToast(false), 4000);
     };
 
     const handleCopyEmail = (e: React.MouseEvent) => {
@@ -27,25 +30,40 @@ export default function Contact({ email }: ContactProps) {
         }
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        
-        if (!name || !emailInput || !message) {
-            displayToast('PLEASE FILL ALL CONTACT FIELDS! ❌');
+
+        if (!name.trim() || !emailInput.trim() || !message.trim()) {
+            displayToast('PLEASE FILL ALL CONTACT FIELDS! ❌', 'error');
             return;
         }
 
-        displayToast('MESSAGE SENT SUCCESSFULLY! TALK SOON! 🚀');
-        setName('');
-        setEmailInput('');
-        setMessage('');
+        setSubmitting(true);
+        try {
+            const res = await fetch('/api/contact', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, email: emailInput, message }),
+            });
+            const data = await res.json();
 
-        // Trigger confetti bursts across the screen
-        if (window.triggerConfetti) {
-            window.triggerConfetti(window.innerWidth / 3, window.innerHeight / 2);
-            setTimeout(() => {
-                window.triggerConfetti?.((window.innerWidth / 3) * 2, window.innerHeight / 2);
-            }, 250);
+            if (!res.ok) throw new Error(data.error);
+
+            displayToast("Message sent! I'll get back to you soon.", 'success');
+            setName('');
+            setEmailInput('');
+            setMessage('');
+
+            if (window.triggerConfetti) {
+                window.triggerConfetti(window.innerWidth / 3, window.innerHeight / 2);
+                setTimeout(() => {
+                    window.triggerConfetti?.((window.innerWidth / 3) * 2, window.innerHeight / 2);
+                }, 250);
+            }
+        } catch (err: any) {
+            displayToast('Something went wrong. Please try again.', 'error');
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -120,26 +138,26 @@ export default function Contact({ email }: ContactProps) {
                         </div>
 
                         <div className="form-group">
-                            <label className="form-label" htmlFor="contact-message">PROJECT DESCRIPTION</label>
+                            <label className="form-label" htmlFor="contact-message">MESSAGE</label>
                             <textarea 
                                 id="contact-message"
                                 className="form-textarea" 
                                 rows={4} 
-                                placeholder="Brief details about what you are building..."
+                                placeholder="Say hello, ask about availability, or describe what you're building..."
                                 value={message}
                                 onChange={(e) => setMessage(e.target.value)}
                             />
                         </div>
 
-                        <button type="submit" className="btn btn-navy form-submit-btn" id="contact-submit-btn">
-                            SEND MESSAGE
+                        <button type="submit" className="btn btn-navy form-submit-btn" id="contact-submit-btn" disabled={submitting}>
+                            {submitting ? 'SENDING...' : 'SEND MESSAGE'}
                         </button>
                     </form>
                 </div>
             </div>
 
             {/* Toast Alert Pop */}
-            <div className={`toast ${showToast ? 'show' : ''}`} id="clipboard-toast">
+            <div className={`toast ${showToast ? 'show' : ''} ${toastType === 'error' ? 'toast-error' : ''}`} id="clipboard-toast">
                 {toastMsg}
             </div>
         </section>

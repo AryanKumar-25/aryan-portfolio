@@ -116,3 +116,26 @@ VALUES
 ('AWS Certified Solutions Architect', 'Amazon Web Services', 'March 2026', 'https://aws.amazon.com'),
 ('Google Cloud Professional Cloud Architect', 'Google Cloud', 'January 2026', 'https://cloud.google.com')
 ON CONFLICT DO NOTHING;
+
+
+-- ==========================================================================
+-- MESSAGES TABLE (Contact form submissions)
+-- Run this in your Supabase SQL Editor to create the messages table.
+-- ==========================================================================
+
+CREATE TABLE IF NOT EXISTS public.messages (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
+    name TEXT NOT NULL,
+    email TEXT NOT NULL,
+    message TEXT NOT NULL
+);
+
+-- Enable RLS
+ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
+
+-- Anyone can INSERT (submit contact form), only Service Role can SELECT (admin reads)
+CREATE POLICY "Allow public insert on messages"
+    ON public.messages FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow admin read on messages"
+    ON public.messages FOR SELECT USING (true);
