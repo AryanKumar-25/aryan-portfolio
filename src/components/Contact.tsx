@@ -67,7 +67,7 @@ export default function Contact({ email }: ContactProps) {
                             id="contact-email-copy-btn"
                         >
                             <span>{email.toUpperCase()}</span>
-                            <span className="btn-icon-label">[ COPY ]</span>
+                            <span className="btn-icon-label"></span>
                         </button>
                         <a 
                             href="https://linkedin.com" 
