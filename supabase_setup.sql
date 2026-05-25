@@ -128,14 +128,20 @@ CREATE TABLE IF NOT EXISTS public.messages (
     created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
     name TEXT NOT NULL,
     email TEXT NOT NULL,
-    message TEXT NOT NULL
+    message TEXT NOT NULL,
+    read BOOLEAN DEFAULT false NOT NULL
 );
 
 -- Enable RLS
 ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
 
--- Anyone can INSERT (submit contact form), only Service Role can SELECT (admin reads)
+-- Anyone can INSERT (submit contact form)
 CREATE POLICY "Allow public insert on messages"
     ON public.messages FOR INSERT WITH CHECK (true);
+-- Admin can read and update (mark as read)
 CREATE POLICY "Allow admin read on messages"
     ON public.messages FOR SELECT USING (true);
+CREATE POLICY "Allow admin update on messages"
+    ON public.messages FOR UPDATE USING (true) WITH CHECK (true);
+CREATE POLICY "Allow admin delete on messages"
+    ON public.messages FOR DELETE USING (true);
