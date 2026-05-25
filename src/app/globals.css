@@ -1453,17 +1453,25 @@ body {
     font-size: 18px;
     text-transform: uppercase;
     text-decoration: none;
-    color: var(--color-white);
+    color: #0F172A;
+    background-color: var(--color-white);
     padding: 12px 18px;
-    border: 2px solid transparent;
-    transition: background-color 0.15s ease, border-color 0.15s ease;
+    border: 2px solid #0F172A;
+    box-shadow: 3px 3px 0 #0F172A;
+    transition: background-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-.admin-nav-item:hover, .admin-nav-item.active {
+.admin-nav-item:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 5px 5px 0 #0F172A;
+}
+
+.admin-nav-item.active {
     background-color: var(--color-orange);
-    color: var(--color-navy);
-    border: 2px solid var(--color-navy);
-    box-shadow: 4px 4px 0 var(--color-navy);
+    color: var(--color-white);
+    border: 2px solid #0F172A;
+    box-shadow: 4px 4px 0 #0F172A;
+    transform: none;
 }
 
 .admin-main {
