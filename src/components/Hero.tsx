@@ -89,7 +89,7 @@ export default function Hero({ tagline, resumeUrl, avatarUrl }: HeroProps) {
                         aria-label="Click for confetti"
                         id="hero-stat-badge"
                     >
-                        <span className="stat-num" style={{ fontSize: '1rem', letterSpacing: '0.05em' }}>HII!!</span>
+                        <span className="stat-num" style={{ fontSize: '1rem', letterSpacing: '0.05em' }}>Hii!!</span>
                     </div>
                 </div>
             </div>
