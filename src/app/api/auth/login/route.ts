@@ -26,13 +26,13 @@ export async function POST(request: Request) {
 
         const response = NextResponse.json({ success: true });
 
-        // Set httpOnly cookie — 24 hours, secure in production
+        // Set httpOnly cookie — 10 minutes, secure in production
         response.cookies.set('admin_session', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
             path: '/',
-            maxAge: 24 * 60 * 60, // 24 hours in seconds
+            maxAge: 10 * 60, // 10 minutes in seconds
         });
 
         return response;

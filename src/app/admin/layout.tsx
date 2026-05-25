@@ -4,6 +4,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import CustomCursor from '@/components/CustomCursor';
 import ConfettiCanvas from '@/components/ConfettiCanvas';
+import SessionGuard from '@/components/SessionGuard';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
@@ -136,6 +137,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             {/* Custom Utilities */}
             <CustomCursor />
             <ConfettiCanvas />
+            <SessionGuard />
         </div>
     );
 }
